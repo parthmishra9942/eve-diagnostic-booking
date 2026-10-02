@@ -27,6 +27,7 @@ from app.core.config import settings
 from app.core.database import SessionLocal, engine
 from app.core.security import compute_webhook_signature, hash_password
 from app.models import (
+    Base,
     Booking,
     BookingStatus,
     Centre,
@@ -45,6 +46,10 @@ logger = logging.getLogger("seed")
 
 
 async def seed() -> None:
+    logger.info("Ensuring database schema exists...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     logger.info("Starting database seeding...")
 
     async with SessionLocal() as session:
@@ -190,7 +195,6 @@ async def seed() -> None:
                         test_id=test.id,
                         price=price,
                         turnaround_hours=tat,
-                        is_available=True,
                     )
                 )
                 logger.info(f"Linked {cname} -> {tname} (INR {price})")
@@ -264,14 +268,14 @@ async def seed() -> None:
 
         await session.commit()
 
-    logger.info("✅ Database seeding successfully completed!")
+    logger.info("[SUCCESS] Database seeding successfully completed!")
     print("\n" + "=" * 65)
-    print("🎉 EVE DIAGNOSTICS SEED COMPLETE — READY FOR TESTING")
+    print("EVE DIAGNOSTICS SEED COMPLETE - READY FOR TESTING")
     print("=" * 65)
     print("Demo Credentials:")
-    print("  • Admin:   admin@example.com   / Admin12345")
-    print("  • Staff:   staff@example.com   / Staff12345")
-    print("  • Patient: patient@example.com / Patient12345")
+    print("  * Admin:   admin@example.com   / Admin12345")
+    print("  * Staff:   staff@example.com   / Staff12345")
+    print("  * Patient: patient@example.com / Patient12345")
     print("Interactive Swagger UI: http://localhost:8000/docs")
     print("=" * 65 + "\n")
 
