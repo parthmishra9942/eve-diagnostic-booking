@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "EVE Healthcare Diagnostic Booking API",
+    "description": "Complete Postman collection for testing Auth, Centres, Tests, Bookings, Payments, and Idempotent Webhooks.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Signup New Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient_test@example.com\",\n  \"full_name\": \"John Doe\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('token', jsonData.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Patient12345\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Diagnostic Centres & Catalog",
+      "item": [
+        {
+          "name": "List Centres (Cached)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/centres?limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "centres"],
+              "query": [
+                { "key": "limit", "value": "10" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tests For Centre #1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/centres/1/tests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "centres", "1", "tests"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Booking Flow",
+      "item": [
+        {
+          "name": "Create Diagnostic Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"centre_id\": 1,\n  \"test_id\": 1,\n  \"appointment_datetime\": \"2026-10-15T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Payment & Idempotent Webhook",
+      "item": [
+        {
+          "name": "Simulate Payment Initiation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments?simulate=success",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments"],
+              "query": [
+                { "key": "simulate", "value": "success" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dispatch Webhook (Signed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"evt_postman_demo_101\",\n  \"booking_id\": 2,\n  \"transaction_id\": \"txn_demo_2_seed\",\n  \"status\": \"SUCCESS\",\n  \"amount\": 750.00,\n  \"signature\": \"dev_signature\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "webhook"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
