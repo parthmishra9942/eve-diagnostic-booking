@@ -17,6 +17,7 @@ os.environ["BCRYPT_ROUNDS"] = "4"
 os.environ["WEBHOOK_DISPATCH_DELAY_SECONDS"] = "0"
 os.environ["JWT_SECRET_KEY"] = "test-secret"
 os.environ["WEBHOOK_SECRET"] = "test-webhook-secret"
+os.environ["CACHE_ENABLED"] = "true"
 os.environ["LOG_LEVEL"] = "WARNING"
 os.environ.pop("ADMIN_EMAIL", None)
 

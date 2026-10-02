@@ -84,6 +84,8 @@ async def test_tests_catalogue(client, staff_headers, user_headers):
 
 async def test_centre_list_is_cached_and_invalidated(client, staff_headers):
     fake = FakeRedis()
+    orig_enabled = cache._enabled
+    cache._enabled = True
     cache._client, cache._disabled_until = fake, 0.0
     try:
         await client.post(f"{API}/centres", json={"name": "Lab A", "location": "Indore"}, headers=staff_headers)
@@ -97,6 +99,7 @@ async def test_centre_list_is_cached_and_invalidated(client, staff_headers):
         assert refreshed["total"] == 2  # version bump invalidated the stale page
     finally:
         cache._client, cache._disabled_until = None, 0.0
+        cache._enabled = orig_enabled
 
 
 async def test_api_works_when_redis_is_unreachable(client, staff_headers):
